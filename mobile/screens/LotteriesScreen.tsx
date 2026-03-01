@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import { View, FlatList } from 'react-native';
 import {
   ActivityIndicator,
+  Button,
   Card,
   FAB,
   Text,
@@ -12,9 +13,27 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import useLotteries from '../hooks/useLotteries';
 import { Lottery } from '../types';
 
-function LotteryCard({ lottery }: { lottery: Lottery }) {
+interface LotteryCardProps {
+  lottery: Lottery;
+  selected: boolean;
+  onSelect: () => void;
+}
+
+function LotteryCard({ lottery, selected, onSelect }: LotteryCardProps) {
   return (
-    <Card mode="outlined" style={{ marginBottom: 12 }}>
+    <Card
+      mode="outlined"
+      onPress={onSelect}
+      style={{
+        marginBottom: 12,
+        ...(selected && { borderColor: '#42a5f5', borderWidth: 2 }),
+      }}
+    >
+      <MaterialCommunityIcons
+        name="sync"
+        size={20}
+        style={{ position: 'absolute', top: 8, right: 8 }}
+      />
       <Card.Content>
         <Text variant="titleMedium">{lottery.name}</Text>
         <Text variant="bodySmall">{lottery.prize}</Text>
@@ -28,6 +47,25 @@ export default function LotteriesScreen() {
   const navigation = useNavigation();
   const lotteries = useLotteries();
   const [filter, setFilter] = useState('');
+  const [selectedLotteries, setSelectedLotteries] = useState<string[]>([]);
+
+  const handleSelect = useCallback((lotteryId: string) => {
+    setSelectedLotteries((prev) => {
+      const index = prev.indexOf(lotteryId);
+      if (index >= 0) {
+        return [...prev.slice(0, index), ...prev.slice(index + 1)];
+      }
+      return [...prev, lotteryId];
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Button disabled={selectedLotteries.length === 0}>Register</Button>
+      ),
+    });
+  }, [navigation, selectedLotteries.length]);
 
   const filteredLotteries = lotteries.data.filter((lottery) =>
     lottery.name.includes(filter),
@@ -38,7 +76,13 @@ export default function LotteriesScreen() {
       <FlatList
         data={filteredLotteries}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <LotteryCard lottery={item} />}
+        renderItem={({ item }) => (
+          <LotteryCard
+            lottery={item}
+            selected={selectedLotteries.includes(item.id)}
+            onSelect={() => handleSelect(item.id)}
+          />
+        )}
         contentContainerStyle={{ paddingHorizontal: 16 }}
         ListHeaderComponent={
           <>
