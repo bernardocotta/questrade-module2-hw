@@ -18,7 +18,6 @@ export function useNewLottery() {
       })
       .catch((e: Error) => {
         setLoading(false);
-        console.error(e);
         setError('Something went wrong. Please try again.');
 
         throw e;

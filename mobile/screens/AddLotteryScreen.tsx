@@ -44,7 +44,7 @@ export default function AddLotteryScreen() {
 
       <TextInput
         label="Lottery name"
-        mode="flat"
+        mode="outlined"
         value={formik.values.name}
         onChangeText={formik.handleChange('name')}
         onBlur={formik.handleBlur('name')}
@@ -59,7 +59,7 @@ export default function AddLotteryScreen() {
 
       <TextInput
         label="Lottery prize"
-        mode="flat"
+        mode="outlined"
         value={formik.values.prize}
         onChangeText={formik.handleChange('prize')}
         onBlur={formik.handleBlur('prize')}
@@ -83,6 +83,7 @@ export default function AddLotteryScreen() {
         onPress={() => formik.handleSubmit()}
         loading={loading}
         disabled={!formik.isValid || loading}
+        style={{ alignSelf: 'flex-start' }}
       >
         Add
       </Button>
