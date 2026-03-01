@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Lottery } from '../types';
 import * as LotteryService from '../services/lottery';
 
@@ -22,9 +23,11 @@ export default function useLotteries() {
       });
   };
 
-  useEffect(() => {
-    fetchLotteries();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchLotteries();
+    }, []),
+  );
 
   return {
     data: lotteries,

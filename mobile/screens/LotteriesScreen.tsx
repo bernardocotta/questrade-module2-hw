@@ -35,51 +35,57 @@ export default function LotteriesScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingVertical: 24,
-        }}
-      >
-        <Text variant="headlineLarge">Lotteries</Text>
-        <MaterialCommunityIcons
-          name="dice-5"
-          size={32}
-          style={{ marginLeft: 12 }}
-        />
-      </View>
-      <TextInput
-        mode="outlined"
-        placeholder="Filter lotteries"
-        value={filter}
-        onChangeText={setFilter}
-        right={<TextInput.Icon icon="magnify" />}
-        style={{ marginHorizontal: 16, marginBottom: 16 }}
-      />
-      {lotteries.loading && <ActivityIndicator size="large" />}
-      {!lotteries.loading && lotteries.data.length === 0 && (
-        <Text
-          variant="bodyLarge"
-          style={{ textAlign: 'center', marginTop: 32 }}
-        >
-          There are no lotteries currently
-        </Text>
-      )}
-      {lotteries.data.length > 0 && filteredLotteries.length === 0 && (
-        <Text
-          variant="bodyLarge"
-          style={{ textAlign: 'center', marginTop: 32 }}
-        >
-          No search results for '{filter}'
-        </Text>
-      )}
       <FlatList
         data={filteredLotteries}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <LotteryCard lottery={item} />}
         contentContainerStyle={{ paddingHorizontal: 16 }}
+        ListHeaderComponent={
+          <>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 24,
+              }}
+            >
+              <Text variant="headlineLarge">Lotteries</Text>
+              <MaterialCommunityIcons
+                name="dice-5"
+                size={32}
+                style={{ marginLeft: 12 }}
+              />
+            </View>
+            <TextInput
+              mode="outlined"
+              placeholder="Filter lotteries"
+              value={filter}
+              onChangeText={setFilter}
+              right={<TextInput.Icon icon="magnify" />}
+              style={{ marginBottom: 16 }}
+            />
+          </>
+        }
+        ListEmptyComponent={
+          lotteries.loading ? (
+            <ActivityIndicator size="large" style={{ marginTop: 32 }} />
+          ) : lotteries.data.length === 0 ? (
+            <Text
+              variant="bodyLarge"
+              style={{ textAlign: 'center', marginTop: 32 }}
+            >
+              There are no lotteries currently
+            </Text>
+          ) : (
+            <Text
+              variant="bodyLarge"
+              style={{ textAlign: 'center', marginTop: 32 }}
+            >
+              No search results for '{filter}'
+            </Text>
+          )
+        }
       />
       <FAB
         icon="plus"
