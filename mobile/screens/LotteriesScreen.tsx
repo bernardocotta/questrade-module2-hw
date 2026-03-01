@@ -3,7 +3,6 @@ import { Animated, View } from 'react-native';
 import {
   ActivityIndicator,
   Button,
-  Card,
   FAB,
   Text,
   TextInput,
@@ -13,47 +12,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
 import useLotteries from '../hooks/useLotteries';
+import LotteryCard from '../components/LotteryCard';
 import RegisterModal from '../components/RegisterModal';
-import { Lottery } from '../types';
 
 const REGISTERED_KEY = 'registeredLotteries';
-
-interface LotteryCardProps {
-  lottery: Lottery;
-  selected: boolean;
-  disabled: boolean;
-  onSelect: () => void;
-}
-
-function LotteryCard({
-  lottery,
-  selected,
-  disabled,
-  onSelect,
-}: LotteryCardProps) {
-  return (
-    <Card
-      mode="outlined"
-      onPress={disabled ? undefined : onSelect}
-      style={{
-        marginBottom: 12,
-        ...(selected && { borderColor: '#42a5f5', borderWidth: 2 }),
-        ...(disabled && { opacity: 0.4, backgroundColor: 'grey' }),
-      }}
-    >
-      <MaterialCommunityIcons
-        name="sync"
-        size={20}
-        style={{ position: 'absolute', top: 8, right: 8 }}
-      />
-      <Card.Content>
-        <Text variant="titleMedium">{lottery.name}</Text>
-        <Text variant="bodySmall">{lottery.prize}</Text>
-        <Text variant="bodySmall">{lottery.id}</Text>
-      </Card.Content>
-    </Card>
-  );
-}
 
 const HEADER_MAX = 150;
 const SCROLL_DISTANCE = 100;
