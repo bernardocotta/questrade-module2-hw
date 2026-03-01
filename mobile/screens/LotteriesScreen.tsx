@@ -8,25 +8,37 @@ import {
   Text,
   TextInput,
 } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Toast from 'react-native-toast-message';
 import useLotteries from '../hooks/useLotteries';
+import RegisterModal from '../components/RegisterModal';
 import { Lottery } from '../types';
+
+const REGISTERED_KEY = 'registeredLotteries';
 
 interface LotteryCardProps {
   lottery: Lottery;
   selected: boolean;
+  disabled: boolean;
   onSelect: () => void;
 }
 
-function LotteryCard({ lottery, selected, onSelect }: LotteryCardProps) {
+function LotteryCard({
+  lottery,
+  selected,
+  disabled,
+  onSelect,
+}: LotteryCardProps) {
   return (
     <Card
       mode="outlined"
-      onPress={onSelect}
+      onPress={disabled ? undefined : onSelect}
       style={{
         marginBottom: 12,
         ...(selected && { borderColor: '#42a5f5', borderWidth: 2 }),
+        ...(disabled && { opacity: 0.4, backgroundColor: 'grey' }),
       }}
     >
       <MaterialCommunityIcons
@@ -48,21 +60,44 @@ export default function LotteriesScreen() {
   const lotteries = useLotteries();
   const [filter, setFilter] = useState('');
   const [selectedLotteries, setSelectedLotteries] = useState<string[]>([]);
+  const [registerModalVisible, setRegisterModalVisible] = useState(false);
+  const [registeredLotteries, setRegisteredLotteries] = useState<string[]>([]);
 
-  const handleSelect = useCallback((lotteryId: string) => {
-    setSelectedLotteries((prev) => {
-      const index = prev.indexOf(lotteryId);
-      if (index >= 0) {
-        return [...prev.slice(0, index), ...prev.slice(index + 1)];
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem(REGISTERED_KEY).then((value) => {
+        if (value) {
+          setRegisteredLotteries(JSON.parse(value));
+        }
+      });
+    }, []),
+  );
+
+  const handleSelect = useCallback(
+    (lotteryId: string) => {
+      if (registeredLotteries.includes(lotteryId)) {
+        return;
       }
-      return [...prev, lotteryId];
-    });
-  }, []);
+      setSelectedLotteries((prev) => {
+        const index = prev.indexOf(lotteryId);
+        if (index >= 0) {
+          return [...prev.slice(0, index), ...prev.slice(index + 1)];
+        }
+        return [...prev, lotteryId];
+      });
+    },
+    [registeredLotteries],
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Button disabled={selectedLotteries.length === 0}>Register</Button>
+        <Button
+          disabled={selectedLotteries.length === 0}
+          onPress={() => setRegisterModalVisible(true)}
+        >
+          Register
+        </Button>
       ),
     });
   }, [navigation, selectedLotteries.length]);
@@ -80,6 +115,7 @@ export default function LotteriesScreen() {
           <LotteryCard
             lottery={item}
             selected={selectedLotteries.includes(item.id)}
+            disabled={registeredLotteries.includes(item.id)}
             onSelect={() => handleSelect(item.id)}
           />
         )}
@@ -135,6 +171,23 @@ export default function LotteriesScreen() {
         icon="plus"
         style={{ position: 'absolute', right: 16, bottom: 16 }}
         onPress={() => navigation.navigate('AddLottery')}
+      />
+      <RegisterModal
+        visible={registerModalVisible}
+        onClose={() => setRegisterModalVisible(false)}
+        onSubmit={() => {
+          const merged = [
+            ...new Set([...registeredLotteries, ...selectedLotteries]),
+          ];
+          AsyncStorage.setItem(REGISTERED_KEY, JSON.stringify(merged));
+          setRegisteredLotteries(merged);
+          setSelectedLotteries([]);
+          Toast.show({
+            type: 'success',
+            text1: 'Registered to lotteries successfully!',
+          });
+        }}
+        selectedLotteries={selectedLotteries}
       />
     </View>
   );
