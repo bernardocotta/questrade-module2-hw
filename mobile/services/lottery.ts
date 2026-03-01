@@ -48,3 +48,32 @@ export async function createNewLottery({
     throw e;
   }
 }
+
+export async function registerToLottery({
+  name,
+  lotteryId,
+}: {
+  name: string;
+  lotteryId: string;
+}) {
+  try {
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/register`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, lotteryId }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+  } catch (e) {
+    console.error(e);
+
+    throw e;
+  }
+}
