@@ -1,5 +1,5 @@
-import { useCallback, useLayoutEffect, useState } from 'react';
-import { View, FlatList } from 'react-native';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { Animated, View } from 'react-native';
 import {
   ActivityIndicator,
   Button,
@@ -55,6 +55,9 @@ function LotteryCard({
   );
 }
 
+const HEADER_MAX = 150;
+const SCROLL_DISTANCE = 100;
+
 export default function LotteriesScreen() {
   const navigation = useNavigation();
   const lotteries = useLotteries();
@@ -62,6 +65,26 @@ export default function LotteriesScreen() {
   const [selectedLotteries, setSelectedLotteries] = useState<string[]>([]);
   const [registerModalVisible, setRegisterModalVisible] = useState(false);
   const [registeredLotteries, setRegisteredLotteries] = useState<string[]>([]);
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, SCROLL_DISTANCE],
+    outputRange: [HEADER_MAX, 0],
+    extrapolate: 'clamp',
+  });
+
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, SCROLL_DISTANCE],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const headerScale = scrollY.interpolate({
+    inputRange: [0, SCROLL_DISTANCE],
+    outputRange: [1, 0.8],
+    extrapolate: 'clamp',
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -108,7 +131,12 @@ export default function LotteriesScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
-      <FlatList
+      <Animated.FlatList
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false },
+        )}
+        scrollEventThrottle={16}
         data={filteredLotteries}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
@@ -120,8 +148,16 @@ export default function LotteriesScreen() {
           />
         )}
         contentContainerStyle={{ paddingHorizontal: 16 }}
+        ListHeaderComponentStyle={{ marginBottom: 16 }}
         ListHeaderComponent={
-          <>
+          <Animated.View
+            style={{
+              height: headerHeight,
+              opacity: headerOpacity,
+              transform: [{ scale: headerScale }],
+              overflow: 'hidden',
+            }}
+          >
             <View
               style={{
                 flexDirection: 'row',
@@ -145,7 +181,7 @@ export default function LotteriesScreen() {
               right={<TextInput.Icon icon="magnify" />}
               style={{ marginBottom: 16 }}
             />
-          </>
+          </Animated.View>
         }
         ListEmptyComponent={
           lotteries.loading ? (
