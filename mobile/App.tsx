@@ -1,4 +1,4 @@
-import HomeScreen from './screens/HomeScreen';
+import LotteriesScreen from './screens/LotteriesScreen';
 import AddLotteryScreen from './screens/AddLotteryScreen';
 import {
   createStaticNavigation,
@@ -9,9 +9,12 @@ import Toast from 'react-native-toast-message';
 import { PaperProvider } from 'react-native-paper';
 
 const RootStack = createNativeStackNavigator({
-  initialRouteName: 'Home',
+  initialRouteName: 'Lotteries',
   screens: {
-    Home: HomeScreen,
+    Lotteries: {
+      screen: LotteriesScreen,
+      options: { title: '' },
+    },
     AddLottery: AddLotteryScreen,
   },
 });
